@@ -2,7 +2,7 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ staging ]
+    branches: [staging]
 
 jobs:
   deploy:
@@ -24,7 +24,7 @@ jobs:
     - name: Get EC2 Public IPs
       id: get-ips
       run: |
-          # Get IPs and format them as comma-separated string
+          # Get IPs and format them as a comma-separated string
           INSTANCE_IPS=$(aws ec2 describe-instances \
             --filters "Name=tag:Environment,Values=dev" "Name=instance-state-name,Values=running" \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
@@ -49,7 +49,7 @@ jobs:
     - name: Deploy to instances
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        DOCKER_IMAGE: your-docker-image:latest
+        DOCKER_IMAGE: django-app-img:latest
       run: |
         # Write the private key to a file
         echo "$SSH_PRIVATE_KEY" > deploy_key
@@ -61,21 +61,20 @@ jobs:
           
           # Deploy script
           ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << 'EOF'
-
+            set -e  # Exit immediately if a command exits with a non-zero status
+            
             cd /home/ubuntu/Technical_DevOps_app  
             git pull origin staging
-            
             
             # Stop and remove existing container
             docker stop app || true
             docker rm app || true
             docker build -t django-app-img .
-
-
+            
             # Run new container
             docker run -d \
               --name app \
               -p 8000:8000 \
-             django-app-img
+              django-app-img
           EOF
         done

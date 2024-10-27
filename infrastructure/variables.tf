@@ -119,4 +119,5 @@ variable "max_size" {
 variable "rds_endpoint" {
   description = "The endpoint of the RDS instance"
   type        = string
+  nullable    = true
 }
