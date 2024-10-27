@@ -102,8 +102,9 @@ jobs:
           for IP in $(echo ${{ steps.get-ips.outputs.instance_ips }} | tr ',' ' '); do
             echo "Deploying to $IP..."
             ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP '
-              cd /home/ubuntu/django-app-terraform && \
+              cd /home/ubuntu/
               git pull origin staging && \
+              cd /home/ubuntu/django-app-terraform && \
               docker stop app || true && \
               docker rm app || true && \
               docker build -t django-app-img . && \
