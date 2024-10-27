@@ -1,0 +1,10 @@
+aws_region    = "us-east-1"
+environment   = "dev"
+bucket_name   = "cogbuck1234"
+db_name       = "testdb"
+db_username   = "dbadmin1"
+db_password   = "Admin321"
+instance_type = "t3.medium"
+key_name      = "cog-kp"
+iam_instance_profile = "ec2-s3-role"
+

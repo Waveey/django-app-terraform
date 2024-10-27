@@ -1,0 +1,65 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ staging ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    env:
+      AWS_REGION: us-east-1
+      
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    
+    - name: Get EC2 Public IPs
+      id: get-ips
+      run: |
+        INSTANCE_IPS=$(aws ec2 describe-instances \
+          --filters "Name=tag:Environment,Values=dev" "Name=instance-state-name,Values=running" \
+          --query 'Reservations[*].Instances[*].PublicIpAddress' \
+          --output text)
+        echo "instance_ips=${INSTANCE_IPS}" >> $GITHUB_OUTPUT
+
+    - name: Deploy to instances
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        DOCKER_IMAGE: your-docker-image:latest
+      run: |
+        # Write the private key to a file
+        echo "$SSH_PRIVATE_KEY" > deploy_key
+        chmod 600 deploy_key
+        
+        # For each instance, deploy
+        for IP in $(echo ${{ steps.get-ips.outputs.instance_ips }}); do
+          echo "Deploying to $IP..."
+          
+          # Deploy script
+          ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << 'EOF'
+
+            cd /home/ubuntu/Technical_DevOps_app  
+            git pull origin staging
+            
+            
+            # Stop and remove existing container
+            docker stop app || true
+            docker rm app || true
+            docker build -t django-app-img .
+
+
+            # Run new container
+            docker run -d \
+              --name app \
+              -p 8000:8000 \
+             django-app-img
+          EOF
+        done

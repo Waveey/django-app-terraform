@@ -1,0 +1,35 @@
+# Django static and collected static files
+/staticfiles/
+/static/
+/media/
+
+# Python & Django
+__pycache__/
+*.py[cod]
+*.so
+.Python
+*.sqlite3
+*.log
+
+# Infrastructure
+infrastructure/.terraform/
+infrastructure/.terraform/providers
+infrastructure/.terraform/providers/registry.terraform.io/hashicorp/aws/5.73.0/windows_386/terraform-provider-aws_v5.73.0_x5.exe
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Environment
+.env
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# System
+.DS_Store
+*.swp
+**/__pycache__/
