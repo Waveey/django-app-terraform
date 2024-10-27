@@ -23,7 +23,7 @@ jobs:
       - name: Get EC2 Public IPs
         id: get-ips
         run: |
-          echo "Fetching EC2 instances with Environment tag set to 'dev' and in running state..."
+          echo "Fetching EC2 instances with tag Name=dev-asg and in running state..."
 
           # Get IPs and format them as a comma-separated string
           INSTANCE_IPS=$(aws ec2 describe-instances \
@@ -34,7 +34,7 @@ jobs:
           # Print the raw output from AWS CLI for debugging
           echo "Raw output from describe-instances:"
           aws ec2 describe-instances \
-            --filters "Name=tag:Environment,Values=dev" "Name=instance-state-name,Values=running" \
+            --filters "Name=tag:Name,Values=dev-asg" "Name=instance-state-name,Values=running" \
             --output json
 
           # Check if IPs were returned
@@ -59,7 +59,6 @@ jobs:
       - name: Deploy to instances
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        #   DOCKER_IMAGE: django-app-img
         run: |
           echo "Starting deployment to instances..."
           
