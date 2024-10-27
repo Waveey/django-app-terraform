@@ -62,31 +62,24 @@ jobs:
         run: |
           echo "Fetching EC2 instances with Environment tag set to 'dev' and in running state..."
 
-          # Get IPs and format them as a comma-separated string
           INSTANCE_IPS=$(aws ec2 describe-instances \
             --filters "Name=tag:Name,Values=dev-asg" "Name=instance-state-name,Values=running" \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text)
 
-          # Print the raw output from AWS CLI for debugging
           echo "Raw output from describe-instances:"
           aws ec2 describe-instances \
             --filters "Name=tag:Environment,Values=dev" "Name=instance-state-name,Values=running" \
             --output json
 
-          # Check if IPs were returned
           if [ -z "$INSTANCE_IPS" ]; then
             echo "No running instances found with specified tags"
             exit 1
           else
-            # Format IPs as a comma-separated string
             INSTANCE_IPS=$(echo "$INSTANCE_IPS" | tr '\n' ',' | sed 's/,$//')
           fi
           
-          # Set the output with proper format
           echo "instance_ips=${INSTANCE_IPS}" >> "$GITHUB_OUTPUT"
-          
-          # Debug output for found IPs
           echo "Found IPs: ${INSTANCE_IPS}"
 
       - name: Use IPs in next steps
@@ -99,23 +92,19 @@ jobs:
         run: |
           echo "Starting deployment to instances..."
           
-          # Write the private key to a file
           echo "$SSH_PRIVATE_KEY" > deploy_key
           chmod 600 deploy_key
           
-          # Check if any IPs were found
           if [ -z "${{ steps.get-ips.outputs.instance_ips }}" ]; then
             echo "No IPs found, aborting deployment."
             exit 1
           fi
 
-          # For each instance, deploy
           for IP in $(echo ${{ steps.get-ips.outputs.instance_ips }} | tr ',' ' '); do
             echo "Deploying to instance with IP: $IP..."
             
-            # Deploy script
-            ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << 'EOF'
-              set -e  # Exit immediately if a command exits with a non-zero status
+            ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << 'ENDSSH'
+              set -e
               
               echo "Navigating to the application directory..."
               cd /home/ubuntu/Technical_DevOps_app
@@ -135,7 +124,7 @@ jobs:
                 --name app \
                 -p 8000:8000 \
                 django-app-img
-            EOF
-             
+ENDSSH
+            
             echo "Deployment to $IP completed."
           done
