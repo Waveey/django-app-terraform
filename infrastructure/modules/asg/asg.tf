@@ -102,7 +102,7 @@ resource "aws_launch_template" "main" {
   name_prefix   = "${var.environment}-template"
   image_id      = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
-  key_name = "cog.kp"
+  key_name = "cog-kp"
 
   network_interfaces {
     associate_public_ip_address = true

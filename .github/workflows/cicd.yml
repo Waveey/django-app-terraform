@@ -1,12 +1,49 @@
-name: Deploy to EC2
+name: Infrastructure and Application Deployment
 
 on:
   push:
     branches: 
+      - staging
       - dev
 
 jobs:
-  deploy:
+  terraform-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.9.8
+
+      - name: Terraform Init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          cd infrastructure
+          terraform init
+
+      - name: Terraform Plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          cd infrastructure
+          terraform plan
+
+      - name: Terraform Apply
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          cd infrastructure
+          terraform apply -auto-approve
+
+  ec2-deploy:
+    needs: terraform-deploy
     runs-on: ubuntu-latest
 
     steps: 
@@ -77,28 +114,28 @@ jobs:
             echo "Deploying to instance with IP: $IP..."
             
             # Deploy script
-           ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << 'EOF'
-            set -e  # Exit immediately if a command exits with a non-zero status
-            
-            echo "Navigating to the application directory..."
-            cd /home/ubuntu/Technical_DevOps_app
-            
-            echo "Pulling latest code from staging branch..."
-            git pull origin staging
-            
-            echo "Stopping and removing existing container if it exists..."
-            docker stop app || true
-            docker rm app || true
-            
-            echo "Building the new Docker image..."
-            docker build -t django-app-img .
-            
-            echo "Running the new container..."
-            docker run -d \
-             --name app \
-             -p 8000:8000 \
-             django-app-img
-          EOF
+            ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << 'EOF'
+              set -e  # Exit immediately if a command exits with a non-zero status
+              
+              echo "Navigating to the application directory..."
+              cd /home/ubuntu/Technical_DevOps_app
+              
+              echo "Pulling latest code from staging branch..."
+              git pull origin staging
+              
+              echo "Stopping and removing existing container if it exists..."
+              docker stop app || true
+              docker rm app || true
+              
+              echo "Building the new Docker image..."
+              docker build -t django-app-img .
+              
+              echo "Running the new container..."
+              docker run -d \
+                --name app \
+                -p 8000:8000 \
+                django-app-img
+            EOF
              
-          echo "Deployment to $IP completed."
+            echo "Deployment to $IP completed."
           done
