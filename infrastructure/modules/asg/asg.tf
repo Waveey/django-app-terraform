@@ -157,7 +157,8 @@ NGINX_CONF
 systemctl restart nginx
 
 # Clone the repository and pull the latest changes
-git clone -b staging https://github.com/Waveey/django-app-terraform.git /home/ubuntu/
+cd /home/ubuntu
+git clone -b staging https://github.com/Waveey/django-app-terraform.git 
 cd /home/ubuntu/django-app-terraform && git pull origin staging
 EOF
 )

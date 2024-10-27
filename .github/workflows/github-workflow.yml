@@ -104,11 +104,11 @@ jobs:
           echo "::endgroup::"
           FAILED_DEPLOYMENTS=()
           for IP in $(echo ${{ steps.get-ips.outputs.instance_ips }} | tr ',' ' '); do
-            echo "::group::Deploying to $IP"
-            echo "Starting deployment to $IP..."
+              echo "::group::Deploying to $IP"
+             echo "Starting deployment to $IP..."
             if ! ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << "ENDSSH"
-              set -e
-              echo "📂 Navigating to application directory..."
+            set -e
+             echo "📂 Navigating to application directory..."
               cd /home/ubuntu/Technical_DevOps_app || exit 1
               echo "🔄 Pulling latest code from staging branch..."
               if ! git pull origin staging; then
