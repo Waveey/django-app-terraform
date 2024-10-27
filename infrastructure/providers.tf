@@ -9,5 +9,5 @@ terraform {
 
 provider "aws" {
   region  = "us-east-1"
-  profile = "kube"  # Set other configurations as needed
+  # profile = "kube"  # Set other configurations as needed
 }

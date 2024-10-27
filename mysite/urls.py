@@ -15,13 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import test_s3, test_db_connection
+# from .views import test_s3, test_db_connection
 
 
 urlpatterns = urlpatterns = [
-    # path('', admin.site.urls),
-    path('admin/', admin.site.urls),
-    path('test-s3/', test_s3, name='test_s3'),
-    path('test-db/', test_db_connection, name='test_db'),
+    path('', admin.site.urls),
+    # path('admin/', admin.site.urls),
+    # path('test-s3/', test_s3, name='test_s3'),
+    # path('test-db/', test_db_connection, name='test_db'),
 
 ]

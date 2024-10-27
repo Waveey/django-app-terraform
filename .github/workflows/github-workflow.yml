@@ -1,0 +1,126 @@
+name: Infrastructure and Application Deployment
+
+on:
+  push:
+    branches:
+      - staging
+      - dev
+
+jobs:
+  terraform-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.9.8
+
+      - name: Configure AWS Credentials for Terraform
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Terraform Init
+        id: init
+        run: |
+          cd infrastructure
+          terraform init
+        continue-on-error: false
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          cd infrastructure
+          terraform plan -detailed-exitcode -out=tfplan
+        continue-on-error: true
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        id: apply
+        run: |
+          cd infrastructure
+          terraform apply -auto-approve tfplan
+
+  ec2-deploy:
+    needs: terraform-deploy
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      AWS_DEFAULT_REGION: us-east-1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Get EC2 Public IPs
+        id: get-ips
+        run: |
+          INSTANCE_IPS=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=dev-asg" "Name=instance-state-name,Values=running" \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --output text | tr '\n' ',' | sed 's/,$//')
+          # Debug output
+          echo "Raw EC2 describe output:"
+          aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=dev-asg" "Name=instance-state-name,Values=running" \
+            --output json
+
+          echo "Formatted IPs: $INSTANCE_IPS"
+
+          # Validate IPs
+          if [ -z "$INSTANCE_IPS" ]; then
+            echo "::error::No running instances found with tag Name=dev-asg"
+            exit 1
+          fi
+
+          # Set output with proper escaping
+          echo "instance_ips=$(echo $INSTANCE_IPS | tr -d '\n')" >> "$GITHUB_OUTPUT"
+          echo "Found IPs: $INSTANCE_IPS"
+          echo "::endgroup::"
+  
+      - name: Setup SSH Key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > deploy_key
+          chmod 600 deploy_key
+  
+      - name: Deploy Application
+        run: |
+          for IP in $(echo ${{ steps.get-ips.outputs.instance_ips }} | tr ',' ' '); do
+            echo "Deploying to $IP..."
+            ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP '
+              cd /home/ubuntu/django-app-terraform && \
+              docker stop app 2>/dev/null || { echo "Container 'app' not removed, skipping removal"; } && \
+              docker rm app 2>/dev/null || { echo "Container 'app' not removed, skipping removal"; } && \
+              docker build -t django-app-img . && \
+              docker run -d --name app -p 8000:8000 django-app-img && \
+              sudo systemctl restart nginx
+            '
+          done
+  
+      - name: Verify Deployment
+        run: |
+          for IP in $(echo ${{ steps.get-ips.outputs.instance_ips }} | tr ',' ' '); do
+            echo "Verifying deployment on $IP..."
+            if ! ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP 'docker ps | grep -q app'; then
+              echo "::error::Deployment verification failed on $IP"
+              exit 1
+            fi
+          done
+  
+      - name: Cleanup
+        if: always()
+        run: rm -f deploy_key

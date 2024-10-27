@@ -41,6 +41,11 @@ variable "ec2_security_group_id" {
   type        = string
 }
 
+# variable "rds_endpoint" {
+#   description = "The endpoint of the RDS instance"
+#   type        = string
+#   default = "null"
+# }
 
 
 

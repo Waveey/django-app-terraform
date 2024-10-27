@@ -102,6 +102,7 @@ resource "aws_launch_template" "main" {
   name_prefix   = "${var.environment}-template"
   image_id      = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
+  key_name = "cog-kp"
 
   network_interfaces {
     associate_public_ip_address = true
@@ -154,6 +155,11 @@ NGINX_CONF
 
 # Restart Nginx to apply changes
 systemctl restart nginx
+
+# Clone the repository and pull the latest changes
+cd /home/ubuntu
+git clone -b staging https://github.com/Waveey/django-app-terraform.git 
+cd /home/ubuntu/django-app-terraform && git pull origin staging
 EOF
 )
 
