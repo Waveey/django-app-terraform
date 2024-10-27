@@ -2,7 +2,7 @@ name: Infrastructure and Application Deployment
 
 on:
   push:
-    branches: 
+    branches:
       - staging
       - dev
 
@@ -46,7 +46,7 @@ jobs:
     needs: terraform-deploy
     runs-on: ubuntu-latest
 
-    steps: 
+    steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -78,7 +78,7 @@ jobs:
           else
             INSTANCE_IPS=$(echo "$INSTANCE_IPS" | tr '\n' ',' | sed 's/,$//')
           fi
-          
+
           echo "instance_ips=${INSTANCE_IPS}" >> "$GITHUB_OUTPUT"
           echo "Found IPs: ${INSTANCE_IPS}"
 
@@ -91,10 +91,10 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           echo "Starting deployment to instances..."
-          
+
           echo "$SSH_PRIVATE_KEY" > deploy_key
           chmod 600 deploy_key
-          
+
           if [ -z "${{ steps.get-ips.outputs.instance_ips }}" ]; then
             echo "No IPs found, aborting deployment."
             exit 1
@@ -102,29 +102,26 @@ jobs:
 
           for IP in $(echo ${{ steps.get-ips.outputs.instance_ips }} | tr ',' ' '); do
             echo "Deploying to instance with IP: $IP..."
-            
+
             ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << 'ENDSSH'
               set -e
-              
+
               echo "Navigating to the application directory..."
               cd /home/ubuntu/Technical_DevOps_app
-              
+
               echo "Pulling latest code from staging branch..."
               git pull origin staging
-              
+
               echo "Stopping and removing existing container if it exists..."
               docker stop app || true
               docker rm app || true
-              
+
               echo "Building the new Docker image..."
               docker build -t django-app-img .
-              
+
               echo "Running the new container..."
-              docker run -d \
-                --name app \
-                -p 8000:8000 \
-                django-app-img
-ENDSSH
-            
+              docker run -d --name app -p 8000:8000 django-app-img
+            ENDSSH
+
             echo "Deployment to $IP completed."
-          done
+           done
