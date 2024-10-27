@@ -31,4 +31,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           cd infrastructure
-          terraform apply -auto-approve --no-prompt
+          terraform apply -auto-approve 

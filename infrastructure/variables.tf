@@ -116,8 +116,8 @@ variable "max_size" {
   default     = 4
 }
 
-variable "rds_endpoint" {
-  description = "The endpoint of the RDS instance"
-  type        = string
-  nullable    = true
-}
+# variable "rds_endpoint" {
+#   description = "The endpoint of the RDS instance"
+#   type        = string
+#   default = null
+# }
