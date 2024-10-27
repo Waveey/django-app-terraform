@@ -23,7 +23,7 @@ jobs:
       - name: Get EC2 Public IPs
         id: get-ips
         run: |
-          echo "Fetching EC2 instances with tag Name=dev-asg and in running state..."
+          echo "Fetching EC2 instances with Environment tag set to 'dev' and in running state..."
 
           # Get IPs and format them as a comma-separated string
           INSTANCE_IPS=$(aws ec2 describe-instances \
@@ -34,7 +34,7 @@ jobs:
           # Print the raw output from AWS CLI for debugging
           echo "Raw output from describe-instances:"
           aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=dev-asg" "Name=instance-state-name,Values=running" \
+            --filters "Name=tag:Environment,Values=dev" "Name=instance-state-name,Values=running" \
             --output json
 
           # Check if IPs were returned
@@ -64,7 +64,7 @@ jobs:
           
           # Write the private key to a file
           echo "$SSH_PRIVATE_KEY" > deploy_key
-          chmod 777 deploy_key
+          chmod 600 deploy_key
           
           # Check if any IPs were found
           if [ -z "${{ steps.get-ips.outputs.instance_ips }}" ]; then
@@ -77,29 +77,28 @@ jobs:
             echo "Deploying to instance with IP: $IP..."
             
             # Deploy script
-            ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << 
-            'EOF'
-              set -e  # Exit immediately if a command exits with a non-zero status
-              
-              echo "Navigating to the application directory..."
-              cd /home/ubuntu/Technical_DevOps_app
-              
-              echo "Pulling latest code from staging branch..."
-              git pull origin staging
-              
-              echo "Stopping and removing existing container if it exists..."
-              docker stop app || true
-              docker rm app || true
-              
-              echo "Building the new Docker image..."
-              docker build -t django-app-img .
-              
-              echo "Running the new container..."
-              docker run -d \
-                --name app \
-                -p 8000:8000 \
-                django-app-img
-            EOF
+           ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << 'EOF'
+            set -e  # Exit immediately if a command exits with a non-zero status
             
-            echo "Deployment to $IP completed."
+            echo "Navigating to the application directory..."
+            cd /home/ubuntu/Technical_DevOps_app
+            
+            echo "Pulling latest code from staging branch..."
+            git pull origin staging
+            
+            echo "Stopping and removing existing container if it exists..."
+            docker stop app || true
+            docker rm app || true
+            
+            echo "Building the new Docker image..."
+            docker build -t django-app-img .
+            
+            echo "Running the new container..."
+            docker run -d \
+             --name app \
+             -p 8000:8000 \
+             django-app-img
+          EOF
+             
+          echo "Deployment to $IP completed."
           done
