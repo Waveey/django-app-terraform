@@ -76,83 +76,41 @@ jobs:
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text)
           if [ -z "$INSTANCE_IPS" ]; then
-            echo "::error::No running instances found with tag Name=dev-asg"
-            exit 1
+              echo "::error::No running instances found with tag Name=dev-asg"
+              exit 1
           fi
-          INSTANCE_COUNT=$(echo "$INSTANCE_IPS" | wc -w)
-          INSTANCE_IPS=$(echo "$INSTANCE_IPS" | tr '\n' ',' | sed 's/,$//')
-          echo "Found $INSTANCE_COUNT running instances"
-          echo "Instance IPs: $INSTANCE_IPS"
           echo "instance_ips=${INSTANCE_IPS}" >> "$GITHUB_OUTPUT"
           echo "::endgroup::"
-
-      - name: Verify SSH key
+  
+      - name: Setup SSH Key
         run: |
-          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            echo "::error::SSH private key is not set in secrets"
-            exit 1
-          fi
-          
-
-      - name: Deploy to instances
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          echo "::group::Deployment Preparation"
-          echo "Setting up SSH key..."
-          echo "Debug: Checking SSH_PRIVATE_KEY value..."
-          echo "Length of SSH key: ${#SSH_PRIVATE_KEY}"
-          echo "First few characters of SSH key: ${SSH_PRIVATE_KEY:0:10}..."
-          echo "$SSH_PRIVATE_KEY" > deploy_key
-          cat deploy_key
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > deploy_key
           chmod 600 deploy_key
-          echo "::endgroup::"
-          FAILED_DEPLOYMENTS=()
+  
+      - name: Deploy Application
+        run: |
           for IP in $(echo ${{ steps.get-ips.outputs.instance_ips }} | tr ',' ' '); do
-              echo "::group::Deploying to $IP"
-              echo "Starting deployment to $IP..."
-            if ! ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << "ENDSSH"
-              set -e
-              echo "📂 Navigating to application directory..."
-              cd /home/ubuntu/django-app-terraform || exit 1
-              echo "🔄 Pulling latest code from staging branch..."
-              if ! git pull origin staging; then
-                  echo "Failed to pull latest code"
-                  exit 1
-              fi
-              echo "🛑 Stopping existing container..."
-              docker stop app 2>/dev/null || true
-              docker rm app 2>/dev/null || true
-              echo "🏗️ Building Docker image..."
-              if ! docker build -t django-app-img .; then
-                  echo "Failed to build Docker image"
-                  exit 1
-              fi
-              echo "🚀 Starting new container..."
-              if ! docker run -d --name app -p 8000:8000 django-app-img; then
-                  echo "Failed to start container"
-                  exit 1
-              fi
-              echo "✅ Verifying container is running..."
-              if ! docker ps | grep -q app; then
-                  echo "Container is not running"
-                  exit 1
-              fi
-            EOF
-              if [ $? -ne 0 ]; then
-                echo "::error::Deployment failed for IP: $IP"
-                FAILED_DEPLOYMENTS+=($IP)
-              else
-              echo "✅ Deployment successful to $IP"
-            fi
-              echo "::endgroup::"
+            echo "Deploying to $IP..."
+            ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP '
+              cd /home/ubuntu/django-app-terraform && \
+              git pull origin staging && \
+              docker stop app || true && \
+              docker rm app || true && \
+              docker build -t django-app-img . && \
+              docker run -d --name app -p 8000:8000 django-app-img
+            '
           done
-          
-          if [ ${#FAILED_DEPLOYMENTS[@]} -ne 0 ]; then
-            echo "::error::Deployments failed for the following IPs: ${FAILED_DEPLOYMENTS[*]}"
-            exit 1
-          fi
-
+  
+      - name: Verify Deployment
+        run: |
+          for IP in $(echo ${{ steps.get-ips.outputs.instance_ips }} | tr ',' ' '); do
+            echo "Verifying deployment on $IP..."
+            if ! ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP 'docker ps | grep -q app'; then
+              echo "::error::Deployment verification failed on $IP"
+              exit 1
+            fi
+          done
+  
       - name: Cleanup
         if: always()
         run: rm -f deploy_key
