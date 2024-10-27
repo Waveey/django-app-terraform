@@ -138,19 +138,20 @@ jobs:
                   echo "Container is not running"
                   exit 1
               fi
-            ENDSSH
-              then
+            EOF
+              if [ $? -ne 0 ]; then
                 echo "::error::Deployment failed for IP: $IP"
-              FAILED_DEPLOYMENTS+=($IP)
+                FAILED_DEPLOYMENTS+=($IP)
               else
-                echo "✅ Deployment successful to $IP"
-              fi
-              echo "::endgroup::"
-              done
-              if [ ${#FAILED_DEPLOYMENTS[@]} -ne 0 ]; then
-              echo "::error::Deployments failed for the following IPs: ${FAILED_DEPLOYMENTS[*]}"
-              exit 1
+              echo "✅ Deployment successful to $IP"
             fi
+              echo "::endgroup::"
+          done
+          
+          if [ ${#FAILED_DEPLOYMENTS[@]} -ne 0 ]; then
+            echo "::error::Deployments failed for the following IPs: ${FAILED_DEPLOYMENTS[*]}"
+            exit 1
+          fi
 
       - name: Cleanup
         if: always()
