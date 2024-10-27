@@ -110,7 +110,7 @@ jobs:
           FAILED_DEPLOYMENTS=()
           for IP in $(echo ${{ steps.get-ips.outputs.instance_ips }} | tr ',' ' '); do
               echo "::group::Deploying to $IP"
-             echo "Starting deployment to $IP..."
+              echo "Starting deployment to $IP..."
             if ! ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << "ENDSSH"
             set -e
              echo "📂 Navigating to application directory..."
@@ -138,19 +138,19 @@ jobs:
                   echo "Container is not running"
                   exit 1
               fi
-              ENDSSH
+            ENDSSH
             then
               echo "::error::Deployment failed for IP: $IP"
               FAILED_DEPLOYMENTS+=($IP)
             else
               echo "✅ Deployment successful to $IP"
-            fi
-            echo "::endgroup::"
+              fi
+              echo "::endgroup::"
           done
           if [ ${#FAILED_DEPLOYMENTS[@]} -ne 0 ]; then
-            echo "::error::Deployments failed for the following IPs: ${FAILED_DEPLOYMENTS[*]}"
-            exit 1
-          fi
+             echo "::error::Deployments failed for the following IPs: ${FAILED_DEPLOYMENTS[*]}"
+             exit 1
+             fi
 
       - name: Cleanup
         if: always()
