@@ -64,7 +64,7 @@ jobs:
           
           # Write the private key to a file
           echo "$SSH_PRIVATE_KEY" > deploy_key
-          chmod 600 deploy_key
+          chmod 777 deploy_key
           
           # Check if any IPs were found
           if [ -z "${{ steps.get-ips.outputs.instance_ips }}" ]; then
