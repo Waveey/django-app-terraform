@@ -107,7 +107,7 @@ jobs:
               docker rm app 2>/dev/null || { echo "Container 'app' not removed, skipping removal"; } && \
               docker build -t django-app-img . && \
               docker run -d --name app -p 8000:8000 django-app-img && \
-              systemctl restart nginx
+              sudo systemctl restart nginx
             '
           done
   
