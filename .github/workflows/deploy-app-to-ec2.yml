@@ -24,11 +24,27 @@ jobs:
     - name: Get EC2 Public IPs
       id: get-ips
       run: |
-        INSTANCE_IPS=$(aws ec2 describe-instances \
-          --filters "Name=tag:Environment,Values=dev" "Name=instance-state-name,Values=running" \
-          --query 'Reservations[*].Instances[*].PublicIpAddress' \
-          --output text)
-        echo "instance_ips=${INSTANCE_IPS}" >> $GITHUB_OUTPUT
+          # Get IPs and format them as comma-separated string
+          INSTANCE_IPS=$(aws ec2 describe-instances \
+            --filters "Name=tag:Environment,Values=dev" "Name=instance-state-name,Values=running" \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --output text | tr '\n' ',' | sed 's/,$//')
+          
+          # Validate if we got any IPs
+          if [ -z "$INSTANCE_IPS" ]; then
+            echo "No running instances found with specified tags"
+            exit 1
+          fi
+          
+          # Set the output with proper format
+          echo "instance_ips=${INSTANCE_IPS}" >> "$GITHUB_OUTPUT"
+          
+          # Debug output (optional)
+          echo "Found IPs: ${INSTANCE_IPS}"
+
+    - name: Use IPs in next steps
+      run: |
+          echo "Working with IPs: ${{ steps.get-ips.outputs.instance_ips }}"
 
     - name: Deploy to instances
       env:
