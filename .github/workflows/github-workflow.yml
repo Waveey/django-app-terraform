@@ -112,8 +112,8 @@ jobs:
               echo "::group::Deploying to $IP"
               echo "Starting deployment to $IP..."
             if ! ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << "ENDSSH"
-            set -e
-             echo "📂 Navigating to application directory..."
+              set -e
+              echo "📂 Navigating to application directory..."
               cd /home/ubuntu/django-app-terraform || exit 1
               echo "🔄 Pulling latest code from staging branch..."
               if ! git pull origin staging; then
@@ -139,18 +139,18 @@ jobs:
                   exit 1
               fi
             ENDSSH
-            then
-              echo "::error::Deployment failed for IP: $IP"
+              then
+                echo "::error::Deployment failed for IP: $IP"
               FAILED_DEPLOYMENTS+=($IP)
-            else
-              echo "✅ Deployment successful to $IP"
+              else
+                echo "✅ Deployment successful to $IP"
               fi
               echo "::endgroup::"
-          done
-          if [ ${#FAILED_DEPLOYMENTS[@]} -ne 0 ]; then
-             echo "::error::Deployments failed for the following IPs: ${FAILED_DEPLOYMENTS[*]}"
-             exit 1
-             fi
+              done
+              if [ ${#FAILED_DEPLOYMENTS[@]} -ne 0 ]; then
+              echo "::error::Deployments failed for the following IPs: ${FAILED_DEPLOYMENTS[*]}"
+              exit 1
+            fi
 
       - name: Cleanup
         if: always()
