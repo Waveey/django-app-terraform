@@ -69,17 +69,27 @@ jobs:
       - name: Get EC2 Public IPs
         id: get-ips
         run: |
-          echo "::group::Fetching EC2 Instances"
-          echo "Fetching EC2 instances with tag Name=dev-asg..."
           INSTANCE_IPS=$(aws ec2 describe-instances \
             --filters "Name=tag:Name,Values=dev-asg" "Name=instance-state-name,Values=running" \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --output text)
+            --output text | tr '\n' ',' | sed 's/,$//')
+          # Debug output
+          echo "Raw EC2 describe output:"
+          aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=dev-asg" "Name=instance-state-name,Values=running" \
+            --output json
+
+          echo "Formatted IPs: $INSTANCE_IPS"
+
+          # Validate IPs
           if [ -z "$INSTANCE_IPS" ]; then
-              echo "::error::No running instances found with tag Name=dev-asg"
-              exit 1
+            echo "::error::No running instances found with tag Name=dev-asg"
+            exit 1
           fi
-          echo "instance_ips=${INSTANCE_IPS}" >> "$GITHUB_OUTPUT"
+
+          # Set output with proper escaping
+          echo "instance_ips=$(echo $INSTANCE_IPS | tr -d '\n')" >> "$GITHUB_OUTPUT"
+          echo "Found IPs: $INSTANCE_IPS"
           echo "::endgroup::"
   
       - name: Setup SSH Key
