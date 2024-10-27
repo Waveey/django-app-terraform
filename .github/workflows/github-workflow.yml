@@ -133,7 +133,7 @@ jobs:
                   echo "Container is not running"
                   exit 1
               fi
-ENDSSH
+              ENDSSH
             then
               echo "::error::Deployment failed for IP: $IP"
               FAILED_DEPLOYMENTS+=($IP)
