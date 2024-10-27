@@ -19,7 +19,7 @@ jobs:
           terraform_version: 1.9.8  # Specify the version you need
 
       - name: Change to Terraform directory
-        run: infrastructure  # Change this to your actual path
+        run: cd infrastructure  # Change this to your actual path
 
       - name: Terraform Init
         run: terraform init
