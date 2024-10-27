@@ -77,7 +77,8 @@ jobs:
             echo "Deploying to instance with IP: $IP..."
             
             # Deploy script
-            ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << 'EOF'
+            ssh -o StrictHostKeyChecking=no -i deploy_key ubuntu@$IP << 
+            'EOF'
               set -e  # Exit immediately if a command exits with a non-zero status
               
               echo "Navigating to the application directory..."
