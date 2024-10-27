@@ -24,7 +24,7 @@ jobs:
         id: get-ips
         run: |
           INSTANCE_IPS=$(aws ec2 describe-instances \
-            --filters "Name=tag:Environment,Values=staging" "Name=instance-state-name,Values=running" \
+            --filters "Name=tag:Environment,Values=dev" "Name=instance-state-name,Values=running" \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text | tr '\n' ',' | sed 's/,$//')
 
