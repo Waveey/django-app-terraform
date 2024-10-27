@@ -16,22 +16,22 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.5.0  # Specify the version you need
+          terraform_version: 1.9.8  # Specify the version you need
 
       - name: Change to Terraform directory
-        run: cd ../infrastructure/  # Change this to your actual path
+        run: infrastructure  # Change this to your actual path
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ../infrastructure/  # Specify the working directory
+        working-directory: infrastructure  # Specify the working directory
 
       - name: Terraform Plan
         run: terraform plan
-        working-directory: ../infrastructure/   # Specify the working directory
+        working-directory: infrastructure   # Specify the working directory
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: ../infrastructure/  # Specify the working directory
+        working-directory: infrastructure/  # Specify the working directory
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Use secrets for sensitive data
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_KEY }}
