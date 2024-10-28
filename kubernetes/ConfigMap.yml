@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: django-configmap
+data:
+  DB_NAME: "testdb"
+  DB_HOST: "dev-postgres.cnc26qssohiz.us-east-1.rds.amazonaws.com"
+  DB_USER: "dbadmin1"
+  # DB_PASSWORD: "Admin321"
