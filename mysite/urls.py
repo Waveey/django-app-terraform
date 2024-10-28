@@ -19,7 +19,7 @@ from django.urls import path
 
 
 urlpatterns = urlpatterns = [
-    path('', admin.site.urls),
+    path('admin/', admin.site.urls),
     # path('admin/', admin.site.urls),
     # path('test-s3/', test_s3, name='test_s3'),
     # path('test-db/', test_db_connection, name='test_db'),
