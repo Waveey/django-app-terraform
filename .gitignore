@@ -12,6 +12,7 @@ __pycache__/
 *.log
 
 # Infrastructure
+infrastructure/terraform.tfvars
 infrastructure/.terraform/
 infrastructure/.terraform/providers
 infrastructure/.terraform/providers/registry.terraform.io/hashicorp/aws/5.73.0/windows_386/terraform-provider-aws_v5.73.0_x5.exe

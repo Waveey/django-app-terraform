@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-deployment
+  labels:
+    app: django-app
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate  
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django-app
+  template:
+    metadata:
+      labels:
+        app: django-app  
+    spec:
+      containers:
+      - name: django-container
+        image: cloudiepad/django
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: django-configmap
+              key: DB_HOST
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: django-configmap
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-password
+              key: password
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: django-configmap
+              key: DB_NAME
+        # - name: FEATURE_DARK_MODE
+        #   valueFrom:
+        #     configMapKeyRef:
+        #       name: feature-toggle-config
+        #       key: FEATURE_DARK_MODE
+        resources:
+          requests:
+            cpu: "300m" 

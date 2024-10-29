@@ -1,0 +1,25 @@
+deployment:
+  appName: django-app
+  deploymentName: django-deployment
+  image: cloudiepad/django
+  containerPort: 8000
+
+service:
+  name: django-service
+  port: 80
+  targetPort: 8000
+
+configmap:
+  name: django-configmap
+  db_host: dev-postgres.cnc26qssohiz.us-east-1.rds.amazonaws.com
+  db_user: dbadmin1
+
+secrets:
+  name: db-password
+  password: QWRtaW4zMjE=
+
+hpa: 
+  name: django-hpa
+  
+
+

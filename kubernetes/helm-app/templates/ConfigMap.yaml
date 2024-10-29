@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configmap.name}}
+data:
+  DB_NAME: "testdb"
+  DB_HOST:  {{ .Values.configmap.db_host | quote }}
+  DB_USER: {{ .Values.configmap.db_user | quote }}
+  # DB_PASSWORD: "Admin321"
