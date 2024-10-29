@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.deploymentName }}
+  labels:
+    app: {{ .Values.deployment.appName }} 
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate  
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.deployment.appName }}  
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.deployment.appName }}    
+    spec:
+      containers:
+      - name: django-container
+        image: {{ .Values.deployment.image }} 
+        ports:
+        - containerPort: {{ .Values.deployment.containerPort }}
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: django-configmap
+              key: DB_HOST
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: django-configmap
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-password
+              key: password
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: django-configmap
+              key: DB_NAME
+        resources:
+          requests:
+            cpu: "300m" 
