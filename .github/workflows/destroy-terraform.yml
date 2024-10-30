@@ -3,7 +3,7 @@ name: Terraform Deployment
 on:
   push:
     branches:
-      - master
+      - staging
 
 jobs:
   deploy:
@@ -24,22 +24,6 @@ jobs:
         run: |
           cd infrastructure
           terraform init
-
-      # - name: Terraform Plan
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #   run: |
-      #     cd infrastructure
-      #     terraform plan
-
-      # - name: Terraform Apply
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #   run: |
-      #     cd infrastructure
-      #     terraform apply -auto-approve
 
 
       - name: Terraform Destroy
