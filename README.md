@@ -1,89 +1,126 @@
-# Django Technical DevOps App
+# AWS Infrastructure & Kubernetes Deployment Project
 
-This is a Django project used for demonstrating DevOps and cloud infrastructure skills. It includes both a local SQLite database for development and a PostgreSQL database (Amazon RDS) for production environments. The project is configured to automatically switch to RDS when the necessary environment variables are provided.
+![AWS Architecture](./aws-architecture.svg)
 
-## Features
+This repository contains infrastructure as code (IaC) and deployment configurations for a Django application, implementing both AWS-native architecture and Kubernetes deployment solutions.
 
-- Django web application.
-- Automatically switches between SQLite (development) and PostgreSQL (production) based on environment variables.
-- Production-ready configuration for integration with Amazon RDS.
+## Project Overview
 
-## Setup and Installation
+The project consists of two main components:
+1. AWS Infrastructure deployment using Terraform/Cloudformmation with CI/CD
+2. Kubernetes deployment on EKS using Helm
 
-### 1. Clone the Repository
+### Architecture Components
 
-```bash
-git clone https://github.com/cognetiks/Technical_DevOps_app.git
-cd Technical_DevOps_app
-```
-### 2. Install Dependencies
+#### AWS Infrastructure (Task 1)
 
-Make sure you have Python 3.8+ and pip installed. Then, create a virtual environment and install the required packages:
+- **Auto Scaling Group** across multiple AZs
+- **Application Load Balancer** for traffic distribution
+- **EC2 instances** with Docker and Nginx reverse proxy
+- **RDS (PostgreSQL)** for database
+- **S3** for static files and logs
+- **CloudWatch** for monitoring
+- **CI/CD Pipeline** for automated deployment
 
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-pip install -r requirements.txt
-```
 
-### 3. Environment Variables
+    
+#### Kubernetes Deployment (Task 2)
+- **EKS Cluster** deployed on custom VPC
+- **Helm Charts** for application deployment
+- **ECR** for container registry
+- **CI/CD Pipeline** for automated deployment
 
-For the project to work in production with an Amazon RDS instance, you need to set the following environment variables:
+## Prerequisites
 
-- `RDS_DB_NAME` – Your RDS database name.
-- `RDS_USERNAME` – Your RDS username.
-- `RDS_PASSWORD` – Your RDS password.
-- `RDS_HOSTNAME` – The endpoint of your RDS instance.
-- `RDS_PORT` – The port your RDS instance uses (default for PostgreSQL is 5432).
+- AWS CLI configured with appropriate credentials
+- Terraform installed (version X.X or higher)
+- kubectl installed
+- Helm installed
+- Docker installed
 
-In development, if these environment variables are not set, the project will default to using SQLite.
 
-### 4. Configure Environment Variables for Production
+### Task 1: AWS Infrastructure Deployment
 
-For production deployment with RDS, export the required environment variables. Example configuration:
+1. ### Task 1 Deliverables
+- Terraform scripts - cd /infrastructure 
 
-```bash
-export RDS_DB_NAME=mydbname
-export RDS_USERNAME=mydbuser
-export RDS_PASSWORD=mypassword
-export RDS_HOSTNAME=mydbinstance.123456789012.us-east-1.rds.amazonaws.com
-export RDS_PORT=5432
-```
+**Initialize Terraform:**
+   ```bash
+   cd terraform
+   terraform init
+   ```
 
-Alternatively, you can add these to a .env file or your deployment tool (e.g., Docker, AWS Elastic Beanstalk).
+2. **Review and Apply Infrastructure:**
+   ```bash
+   terraform plan
+   terraform apply
+   ```
 
-### 5. Run Database Migrations
+3. **CI/CD Pipeline:**
+   - Pipeline automatically triggers on pushes to staging branch (can be modified) and deploys all parts of the architecture including the Postgre RDS located at
 
-Apply migrations to set up your database schema:
+   ```bash
+   /.github/workflows/github-workflow.yml
+   ```
 
-```bash
-python manage.py migrate
-```
+   - Destroy workflow available for cleanup
+   
+   ## Extras
+   The ASGs are bootsrapped on launch to install docker and nginx, and also configures the nginx to reverse proxy all traffic from the container to port 80.
+   The second part of the pipeline deploys the EC2s and runs the containers as well.
 
-### 6. Run the Application
+### Task 2: Kubernetes Deployment Commands
 
-To start the Django development server:
+1. **Deploy VPC using CloudFormation:**
+   ```bash
+   aws cloudformation deploy --template-file vpc.yaml --stack-name eks-vpc
+   ```
 
-```bash
-python manage.py runserver
-```
+2. **Build and Push Docker Image:**
+   ```bash
+   docker build -t app-name .
+   docker push <ECR-REPOSITORY-URL>/app-name:latest
+   ```
+I set up the docker image on ECR for the EKS.
 
-For production, you'll need to configure a web server like NGINX or Gunicorn.
 
-## Local Development Setup
+3. **Deploy to EKS using Helm:**
+   ```bash
+   helm upgrade --install app-name ./helm-charts/app-name
+   ```
+## Extras
+I added a CICD pipeline to automate the deployment of this EKS deployment to the VPC created by the Cloudformatuin template.
 
-For local development, the app will default to using an SQLite database. No special configuration is needed unless you wish to connect to PostgreSQL locally.
+## Project Structure
 
-### Running Local Server
+- Architecture diagram 
+- Terraform script - /infrastructure/*
+- Cloudformation VPC for EKS - /cloudformation/
+- kubernetes manifest files - /kubernetes/app-deployment
+- Helm Chart - /kubernetes/helm-app
+- Dockerfile - ./Dockerfile
+- Terraform pipeline + EC2 bootstrap pipeline - /.githhub/workflows/github-workflow.yml
+- EKS CICD pipeline - /.github/workflows/deploy-eks.yaml
 
-To run the server locally:
 
-```bash
-python manage.py runserver
-```
+## Security Considerations
 
-### Production Deployment
-When deploying to production (e.g., on AWS or any other cloud provider), ensure the required environment variables are set. The app will automatically connect to the PostgreSQL RDS instance once the variables are correctly configured.
+Current Implementation:
+- IAM roles and security groups implemented
+- NGINX reverse proxy configured
+- EC2 instances in private subnets
 
-### Contributing
-Feel free to fork the repository and submit pull requests for improvements or bug fixes.# django-app-terraform
+## Missing Deliverables
+
+- CloudFormation equivalent of Terraform configuration
+
+ ## Future Improvements:
+   - Implement AWS Secrets Manager
+   - Add comprehensive monitoring dashboards
+   - Enhance backup and disaster recovery procedures
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
