@@ -89,9 +89,9 @@ I set up the docker image on ECR for the EKS.
    helm upgrade --install app-name ./helm-charts/app-name
    ```
 ## Extras
-I added a CICD pipeline to automate the deployment of this EKS deployment to the VPC created by the Cloudformatuin template.
+I added a CICD pipeline to automate the deployment of this EKS deployment to the VPC created by the Cloudformation template.
 
-## Project Structure
+## Project File Structure
 
 - Architecture diagram 
 - Terraform script - /infrastructure/*
@@ -109,10 +109,12 @@ Current Implementation:
 - IAM roles and security groups implemented
 - NGINX reverse proxy configured
 - EC2 instances in private subnets
+- RDS in private subnets
 
 ## Missing Deliverables
 
 - CloudFormation equivalent of Terraform configuration
+- Monitoring using Cloudwatch
 
  ## Future Improvements:
    - Implement AWS Secrets Manager
