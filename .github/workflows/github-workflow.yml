@@ -3,8 +3,7 @@ name: Infrastructure and Application Deployment
 on:
   push:
     branches:
-      - dev
-      - dev
+      - staging
 
 jobs:
   terraform-deploy:
