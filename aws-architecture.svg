@@ -1,0 +1,46 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background -->
+    <rect width="800" height="600" fill="#ffffff"/>
+    
+    <!-- AWS Cloud Border -->
+    <rect x="50" y="50" width="700" height="500" fill="#F7F7F7" stroke="#232F3E" stroke-width="2" rx="10"/>
+    <text x="60" y="80" font-family="Arial" font-size="16" fill="#232F3E">AWS Cloud</text>
+    
+    <!-- VPC -->
+    <rect x="100" y="100" width="600" height="400" fill="#E8F3FC" stroke="#147EBA" stroke-width="2" rx="5"/>
+    <text x="110" y="130" font-family="Arial" font-size="14" fill="#147EBA">VPC</text>
+    
+    <!-- Availability Zones -->
+    <rect x="120" y="150" width="250" height="300" fill="#F7F7F7" stroke="#879196" stroke-dasharray="5,5"/>
+    <text x="130" y="170" font-family="Arial" font-size="12" fill="#879196">AZ-1</text>
+    
+    <rect x="430" y="150" width="250" height="300" fill="#F7F7F7" stroke="#879196" stroke-dasharray="5,5"/>
+    <text x="440" y="170" font-family="Arial" font-size="12" fill="#879196">AZ-2</text>
+    
+    <!-- ALB -->
+    <rect x="300" y="200" width="200" height="40" fill="#FF9900" stroke="#232F3E" stroke-width="2" rx="5"/>
+    <text x="350" y="225" font-family="Arial" font-size="12" fill="white" text-anchor="middle">Application Load Balancer</text>
+    
+    <!-- Auto Scaling Group -->
+    <rect x="140" y="280" width="520" height="120" fill="#E8F3FC" stroke="#147EBA" stroke-width="2" rx="5"/>
+    <text x="150" y="300" font-family="Arial" font-size="12" fill="#147EBA">Auto Scaling Group</text>
+    
+    <!-- EC2 Instances -->
+    <rect x="160" y="320" width="80" height="40" fill="#FF9900" stroke="#232F3E" stroke-width="2" rx="5"/>
+    <text x="200" y="345" font-family="Arial" font-size="12" fill="white" text-anchor="middle">EC2</text>
+    
+    <rect x="450" y="320" width="80" height="40" fill="#FF9900" stroke="#232F3E" stroke-width="2" rx="5"/>
+    <text x="490" y="345" font-family="Arial" font-size="12" fill="white" text-anchor="middle">EC2</text>
+    
+    <!-- RDS -->
+    <rect x="300" y="440" width="200" height="40" fill="#3B48CC" stroke="#232F3E" stroke-width="2" rx="5"/>
+    <text x="400" y="465" font-family="Arial" font-size="12" fill="white" text-anchor="middle">RDS (PostgreSQL)</text>
+    
+    <!-- S3 Bucket -->
+    <rect x="720" y="280" width="60" height="60" fill="#147EBA" stroke="#232F3E" stroke-width="2"/>
+    <text x="750" y="315" font-family="Arial" font-size="12" fill="white" text-anchor="middle">S3</text>
+    
+    <!-- CloudWatch -->
+    <rect x="720" y="360" width="60" height="60" fill="#FF4F8B" stroke="#232F3E" stroke-width="2"/>
+    <text x="750" y="395" font-family="Arial" font-size="10" fill="white" text-anchor="middle">CloudWatch</text>
+</svg>
