@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   VPC with Private and Public subnet
@@ -33,10 +33,23 @@ Resources:
       MapPublicIpOnLaunch: true
       AvailabilityZone: !Select
         - 0
-        - Fn::GetAZs: !Ref 'AWS::Region'
+        - Fn::GetAZs: !Ref "AWS::Region"
       Tags:
         - Key: Name
           Value: PublicSubnet
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref StaticIpVpc
+      CidrBlock: !Ref PublicSubnetCidrBlock
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      Tags:
+        - Key: Name
+          Value: PublicSubnet2
 
   PrivateSubnet:
     Type: AWS::EC2::Subnet
@@ -46,7 +59,7 @@ Resources:
       MapPublicIpOnLaunch: false
       AvailabilityZone: !Select
         - 0
-        - Fn::GetAZs: !Ref 'AWS::Region'
+        - Fn::GetAZs: !Ref "AWS::Region"
       Tags:
         - Key: Name
           Value: PrivateSubnet
@@ -85,6 +98,12 @@ Resources:
     Properties:
       RouteTableId: !Ref VpcPublicRouteTable
       SubnetId: !Ref PublicSubnet
+
+  SubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref VpcPublicRouteTable
+      SubnetId: !Ref PublicSubnet2
 
   VpcPrivateRouteTable:
     Type: AWS::EC2::RouteTable
@@ -137,3 +156,9 @@ Outputs:
     Value: !Ref PublicSubnet
     Export:
       Name: PublicSubnetId
+
+  PublicSubnet2Id:
+    Description: Public Subnet 2 ID
+    Value: !Ref PublicSubnet2
+    Export:
+      Name: PublicSubnet2Id

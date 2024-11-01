@@ -3,7 +3,10 @@ name: Terraform Destruction
 on:
   push:
     branches:
-      - staging
+      - master
+
+    paths: 
+      - ".github/workflows/destroy-terraform.yml"  
 
 jobs:
   deploy:
