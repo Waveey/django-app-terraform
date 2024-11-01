@@ -47,8 +47,8 @@ jobs:
     - name: Update kube config
       run: aws eks update-kubeconfig --name django-app-cluster
 
-    - name: Deploy go-app helm chart to EKS
+    - name: Deploy django-app helm chart to EKS
       run: |
-        helm uninstall helm-app -n helm
+        helm uninstall django-app -n helm
         cd kubernetes/helm-app
-        helm install helm-app -f values.yaml . -n helm
+        helm install django-app . -n helm

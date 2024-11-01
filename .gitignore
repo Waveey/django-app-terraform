@@ -19,6 +19,10 @@ infrastructure/.terraform/providers/registry.terraform.io/hashicorp/aws/5.73.0/w
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
+terraform.tfvars/
+
+.kubernetes/helm-app/values.yaml
+
 
 # Environment
 .env
