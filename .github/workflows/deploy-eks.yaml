@@ -45,7 +45,7 @@ jobs:
     
 
     - name: Update kube config
-      run: aws eks update-kubeconfig --name django-app-cluster
+      run: aws eks update-kubeconfig --name eks-cluster
 
     - name: Deploy django-app helm chart to EKS
       run: |
