@@ -1,4 +1,4 @@
-name: Build and push docker image to ECR
+name: Build and push docker image to EKS
 on:
   push:
     branches: [ "staging" ]
@@ -38,19 +38,18 @@ jobs:
 
     - name: Build, tag, and push docker image to Amazon ECR Public
       env:
-        REGISTRY: ${{ secrets.ECR_REGISTRY }}
         REPOSITORY: django-app
         IMAGE_TAG: latest
       run: |
-        docker build -t  ${{ secrets.ECR_REGISTRY }}/django-app:latest .
-        docker push  ${{ secrets.ECR_REGISTRY }}/django-app:latest
+        docker build -t 975049907833.dkr.ecr.us-east-1.amazonaws.com/django:latest .
+        docker push  975049907833.dkr.ecr.us-east-1.amazonaws.com/django:latest
     
 
     - name: Update kube config
-      run: aws eks update-kubeconfig --name kubernetes-cluster
+      run: aws eks update-kubeconfig --name django-app-cluster
 
     - name: Deploy go-app helm chart to EKS
       run: |
         helm uninstall helm-app -n helm
         cd kubernetes/helm-app
-        helm install helm-app helm-app -f values.yaml . -n helm
+        helm install helm-app -f values.yaml . -n helm
